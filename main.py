@@ -138,8 +138,10 @@ def generate_weather_response(weather_data, city):
 
     baze={json.dumps(products, indent=2, ensure_ascii=False)}
 
-    prompt = f"""Give me a product reccomendation using weather report for today {prognoza}{temperatura}{vlaznost}{vjetar_brzina}, degrees are in celsius, but do not mention the weather just recommend the product from product base {baze}. Use product description.
-    
+    prompt = f"""Give me a product reccomendation using weather report for today {prognoza}{temperatura}{vlaznost}{vjetar_brzina}, degrees are in celsius, but do not mention the weather just recommend retail products that user could be interested in (food, electronics, clothes, cosmetics, beverages) based on the weather. Products must be diverse.Provide only product decription like this:
+    - A soothing and hydrating gel with aloe vera extracts 
+    - A compact and rechargeable fan
+    - lightweight t-shirt Made from breathable fabric
    return JSON object with 5 relevant products.
     
     """
@@ -153,7 +155,7 @@ def generate_weather_response(weather_data, city):
     return response.choices[0].message.content
 
 if __name__ == "__main__":
-    city = "Pula"
+    city = "Dubai"
     weather = get_weather(city)
     odgovor = generate_weather_response(weather, city)
     print(odgovor)
