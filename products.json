@@ -1,0 +1,7 @@
+[
+  {"id": "1", "name": "Vjetrovka", "description": "Lagana jakna otporna na vjetar, idealna za vjetrovito vrijeme."},
+  {"id": "2", "name": "Kišobran", "description": "Sklopivi kišobran za kišne dane."},
+  {"id": "3", "name": "Sunčane naočale", "description": "Zaštita očiju tijekom sunčanog vremena."},
+  {"id": "4", "name": "Termos boca", "description": "Za držanje toplih napitaka po hladnom vremenu."},
+  {"id": "5", "name": "Kapa", "description": "Topla kapa za hladne zimske dane."}
+]

@@ -18,14 +18,15 @@ def get_weather(city):
     else:
         return None
 
-def generate_weather_response(weather_data):
+def generate_weather_response(weather_data, city):
     if not weather_data:
-        return "Ne mogu dohvatiti podatke o vremenu za taj grad."
+        return "Could not retrieve weather data."
 
     description = weather_data['weather'][0]['description']
     temp = weather_data['main']['temp']
+    wind = weather_data['wind']['speed']
 
-    prompt = f"Daj mi jednostavan opis vremena za grad: Temperatura je {temp}°C, a trenutno je {description}."
+    prompt = f"Give me a weather report for today in the city {city}, but do not mention the weather just recommend what to wear."
 
     response = openai.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -36,7 +37,7 @@ def generate_weather_response(weather_data):
     return response.choices[0].message.content
 
 if __name__ == "__main__":
-    grad = "Pula"
-    weather = get_weather(grad)
-    odgovor = generate_weather_response(weather)
+    city = "Pula"
+    weather = get_weather(city)
+    odgovor = generate_weather_response(weather, city)
     print(odgovor)
