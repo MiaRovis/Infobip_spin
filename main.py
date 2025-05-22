@@ -3,21 +3,83 @@ import requests
 from dotenv import load_dotenv
 import openai
 import json
+from qdrant_client import QdrantClient
+from qdrant_client.models import PointStruct, VectorParams, Distance
+import pandas as pd
+import uuid
 
 load_dotenv()
+
+qdrant = QdrantClient(host="localhost", port=6333)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 
 openai.api_key = OPENAI_API_KEY
 
-def get_weather(city):
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric&lang=hr"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return None
+# Naziv kolekcije
+collection_name = "proizvodi"
+
+# Učitaj Excel
+excel_path = "proizvodi.xlsx"  # <-- promijeni naziv datoteke po potrebi
+df = pd.read_excel(excel_path)
+
+# Provjera stupaca
+required_columns = {"id", "description"}
+if not required_columns.issubset(set(df.columns)):
+    raise ValueError(f"Excel mora sadržavati stupce: {required_columns}")
+
+# (Re)kreiraj kolekciju
+if not qdrant.collection_exists("proizvodi"):
+    qdrant.create_collection(
+        collection_name="proizvodi",
+        vectors_config={
+            "size": 1536,
+            "distance": "Cosine"
+        }
+    )
+else:
+    print("Kolekcija 'proizvodi' već postoji.")
+
+# Funkcija za dobivanje embeddinga
+def get_embedding(text: str):
+    response = openai.embeddings.create(
+        model="text-embedding-3-small",
+        input=text
+    )
+    return response.data[0].embedding
+
+# Generiraj embeddinge i upiši u Qdrant
+points = []
+for _, row in df.iterrows():
+    opis = f"{row['id']}. {row['description']}"
+    embedding = get_embedding(opis)
+    point = PointStruct(
+        id=str(uuid.uuid4()),
+        vector=embedding,
+        payload={
+            "id": str(row["id"]),
+            "description": row["description"]
+        }
+    )
+    points.append(point)
+
+# Upis u kolekciju
+#qdrant.upsert(collection_name=collection_name, points=points)
+
+#print("✅ Uspješno upisano u Qdrant.")
+
+query_text = "Oprema za hladno i vjetrovito vrijeme"
+query_vector = get_embedding(query_text)
+
+results = qdrant.search(
+    collection_name=collection_name,
+    query_vector=query_vector,
+    limit=1
+)
+
+for r in results:
+    print(r.payload["id"], "-", r.payload["description"])
     
 products = [
   {"id": "1", "name": "Vjetrovka", "description": "Lagana jakna otporna na vjetar, idealna za vjetrovito vrijeme."},
@@ -122,23 +184,52 @@ products = [
   {"id": "100", "name": "Keks s voćem", "description": "Lagani desert za svaki dan."}
 ]
 
+cities = [
+    "Zagreb", "Split", "Rijeka", "Osijek", "Zadar", "Dubrovnik", "Pula", "Varaždin", "Karlovac", "Šibenik",
+    "Vukovar", "Sisak", "Čakovec", "Bjelovar", "Koprivnica", "Velika Gorica", "Požega", "Vinkovci", "Knin", "Petrinja",
+    "Novi Sad", "Beograd", "Sarajevo", "Ljubljana", "Maribor", "Skopje", "Podgorica", "Tirana", "Priština", "Mostar",
+    "Plitvice", "Gospić", "Metković", "Sinj", "Đakovo", "Našice", "Kutina", "Samobor", "Zaprešić", "Solin",
+    "Makarska", "Umag", "Poreč", "Rovinj", "Trogir", "Opatija", "Crikvenica", "Nin", "Pag", "Hvar",
+    "Korčula", "Cres", "Krk", "Rab", "Lošinj", "Novalja", "Biograd", "Imotski", "Benkovac", "Omiš",
+    "Ilok", "Valpovo", "Slatina", "Nova Gradiška", "Lipik", "Virovitica", "Daruvar", "Ogulin", "Glina", "Delnice",
+    "Prelog", "Lepoglava", "Vrbovec", "Križevci", "Ivanić-Grad", "Đurđevac", "Zabok", "Donji Miholjac", "Pakrac", "Grubišno Polje",
+    "Senj", "Drniš", "Bakar", "Kraljevica", "Vrlika", "Otočac", "Slunj", "Orahovica", "Beli Manastir", "Belišće",
+    "Velika", "Obrovac", "Tisno", "Vodice", "Supetar", "Stari Grad", "Vis", "Komiža", "Lastovo", "Mljet"
+]
+
+def get_weather(city):
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric&lang=hr"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
     
 def generate_weather_response(weather_data, city):
-    if not weather_data:
-        return "Could not retrieve weather data."
+     
+    if weather_data:
+            prognoza = weather_data["weather"][0]["description"]
+            temperatura = weather_data["main"]["temp"]
+            vlaznost = weather_data["main"]["humidity"]
+            vjetar_brzina = weather_data["wind"]["speed"]
+            osjecaj = weather_data["main"]["feels_like"]
+            tlak = weather_data["main"]["pressure"]
+            vidljivost = weather_data.get("visibility", "N/A")
+            oblaci = weather_data["clouds"]["all"]
+            smjer_vjetra = weather_data["wind"].get("deg", "N/A")
 
-    prognoza = weather_data["weather"][0]["description"]
-    temperatura = weather_data["main"]["temp"]
-    vlaznost = weather_data["main"]["humidity"]
-    vjetar_brzina = weather_data["wind"]["speed"]
+    else:
+            print(f"Nema podataka za {city}")
+            results.append({"Grad": city, "Preporučeni proizvodi": "No weather data"})
 
-    print(prognoza, temperatura, vlaznost, vjetar_brzina)
+    print(prognoza, temperatura, vlaznost, vjetar_brzina, osjecaj, tlak, vidljivost, oblaci, smjer_vjetra)
 
     #description = "sunny and 30 degrees celsius"
 
     baze={json.dumps(products, indent=2, ensure_ascii=False)}
+    
 
-    prompt = f"""Give me a product reccomendation using weather report for today {prognoza}{temperatura}{vlaznost}{vjetar_brzina}, degrees are in celsius, but do not mention the weather just recommend retail products that user could be interested in (food, electronics, clothes, cosmetics, beverages) based on the weather. Products must be diverse.Provide only product decription like this:
+    prompt = f"""Give me a product reccomendation using weather report for today {prognoza}{temperatura}{vlaznost}{vjetar_brzina}{osjecaj}{tlak}{vidljivost}{oblaci}{smjer_vjetra}, degrees are in celsius, but do not mention the weather just recommend retail products that user could be interested in (food, electronics, clothes, cosmetics, beverages) based on the weather. Products must be diverse.Provide only product decription like this:
     - A soothing and hydrating gel with aloe vera extracts 
     - A compact and rechargeable fan
     - lightweight t-shirt Made from breathable fabric
@@ -155,7 +246,11 @@ def generate_weather_response(weather_data, city):
     return response.choices[0].message.content
 
 if __name__ == "__main__":
-    city = "Dubai"
-    weather = get_weather(city)
-    odgovor = generate_weather_response(weather, city)
-    print(odgovor)
+    results = []
+    for idx, city in enumerate(cities, start=1):
+        weather = get_weather(city)
+        preporuka = generate_weather_response(weather, city)
+        print(f"{idx}. Grad: {city}")
+        print(preporuka)
+        print("-----")
+        results.append({"Grad": city, "Preporučeni proizvodi": preporuka})
