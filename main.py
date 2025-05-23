@@ -185,16 +185,26 @@ products = [
 ]
 
 cities = [
-    "Zagreb", "Split", "Rijeka", "Osijek", "Zadar", "Dubrovnik", "Pula", "Varaždin", "Karlovac", "Šibenik",
-    "Vukovar", "Sisak", "Čakovec", "Bjelovar", "Koprivnica", "Velika Gorica", "Požega", "Vinkovci", "Knin", "Petrinja",
-    "Novi Sad", "Beograd", "Sarajevo", "Ljubljana", "Maribor", "Skopje", "Podgorica", "Tirana", "Priština", "Mostar",
-    "Plitvice", "Gospić", "Metković", "Sinj", "Đakovo", "Našice", "Kutina", "Samobor", "Zaprešić", "Solin",
-    "Makarska", "Umag", "Poreč", "Rovinj", "Trogir", "Opatija", "Crikvenica", "Nin", "Pag", "Hvar",
-    "Korčula", "Cres", "Krk", "Rab", "Lošinj", "Novalja", "Biograd", "Imotski", "Benkovac", "Omiš",
-    "Ilok", "Valpovo", "Slatina", "Nova Gradiška", "Lipik", "Virovitica", "Daruvar", "Ogulin", "Glina", "Delnice",
-    "Prelog", "Lepoglava", "Vrbovec", "Križevci", "Ivanić-Grad", "Đurđevac", "Zabok", "Donji Miholjac", "Pakrac", "Grubišno Polje",
-    "Senj", "Drniš", "Bakar", "Kraljevica", "Vrlika", "Otočac", "Slunj", "Orahovica", "Beli Manastir", "Belišće",
-    "Velika", "Obrovac", "Tisno", "Vodice", "Supetar", "Stari Grad", "Vis", "Komiža", "Lastovo", "Mljet"
+    "Zagreb", "Split", "Rijeka", "Osijek", "Dubrovnik",
+    "Vienna", "Berlin", "Paris", "Madrid", "Rome",
+    "London", "Amsterdam", "Brussels", "Lisbon", "Prague",
+    "Warsaw", "Budapest", "Copenhagen", "Oslo", "Stockholm",
+    "Athens", "Dublin", "Helsinki", "Belgrade", "Sarajevo",
+    "Skopje", "Podgorica", "Ljubljana", "Sofia", "Bucharest",
+    "New York", "Los Angeles", "Chicago", "Houston", "Phoenix",
+    "Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa",
+    "Mexico City", "Guadalajara", "Monterrey", "Lima", "Bogotá",
+    "Buenos Aires", "Santiago", "São Paulo", "Rio de Janeiro", "Brasília",
+    "Tokyo", "Osaka", "Kyoto", "Seoul", "Busan",
+    "Beijing", "Shanghai", "Shenzhen", "Guangzhou", "Hong Kong",
+    "Bangkok", "Hanoi", "Ho Chi Minh City", "Jakarta", "Manila",
+    "Delhi", "Mumbai", "Bangalore", "Chennai", "Kolkata",
+    "Istanbul", "Tehran", "Baghdad", "Riyadh", "Dubai",
+    "Cairo", "Alexandria", "Johannesburg", "Cape Town", "Nairobi",
+    "Sydney", "Melbourne", "Brisbane", "Perth", "Auckland",
+    "Wellington", "Suva", "Reykjavik", "Tallinn", "Vilnius",
+    "Riga", "Luxembourg", "Monaco", "San Marino", "Andorra la Vella",
+    "Doha", "Kuwait City", "Manama", "Muscat", "Amman"
 ]
 
 def get_weather(city):
@@ -222,14 +232,14 @@ def generate_weather_response(weather_data, city):
             print(f"Nema podataka za {city}")
             results.append({"Grad": city, "Preporučeni proizvodi": "No weather data"})
 
-    print(prognoza, temperatura, vlaznost, vjetar_brzina, osjecaj, tlak, vidljivost, oblaci, smjer_vjetra)
+    print(city, prognoza, temperatura, vlaznost, vjetar_brzina, osjecaj, tlak, vidljivost, oblaci, smjer_vjetra)
 
     #description = "sunny and 30 degrees celsius"
 
     baze={json.dumps(products, indent=2, ensure_ascii=False)}
     
 
-    prompt = f"""Give me a product reccomendation using weather report for today {prognoza}{temperatura}{vlaznost}{vjetar_brzina}{osjecaj}{tlak}{vidljivost}{oblaci}{smjer_vjetra}, degrees are in celsius, but do not mention the weather just recommend retail products that user could be interested in (food, electronics, clothes, cosmetics, beverages) based on the weather. Products must be diverse.Provide only product decription like this:
+    prompt = f"""Give me a product reccomendation using weather report for today {city}{prognoza}{temperatura}{vlaznost}{vjetar_brzina}{osjecaj}{tlak}{vidljivost}{oblaci}{smjer_vjetra}, degrees are in celsius, but do not mention the weather just recommend retail products that user could be interested in (food, electronics, clothes, cosmetics, beverages) based on the weather. Products must be diverse.Provide only product decription like this:
     - A soothing and hydrating gel with aloe vera extracts 
     - A compact and rechargeable fan
     - lightweight t-shirt Made from breathable fabric
@@ -247,10 +257,9 @@ def generate_weather_response(weather_data, city):
 
 if __name__ == "__main__":
     results = []
-    for idx, city in enumerate(cities, start=1):
+    for city in cities:
         weather = get_weather(city)
         preporuka = generate_weather_response(weather, city)
-        print(f"{idx}. Grad: {city}")
         print(preporuka)
         print("-----")
         results.append({"Grad": city, "Preporučeni proizvodi": preporuka})
