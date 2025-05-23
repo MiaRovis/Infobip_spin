@@ -248,7 +248,7 @@ def generate_weather_response(weather_data, city):
     """
 
     response = openai.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": prompt}
         ]
