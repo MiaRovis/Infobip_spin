@@ -215,8 +215,7 @@ def get_weather(city):
     else:
         return None
     
-def generate_weather_response(weather_data, city):
-     
+def generate_weather_response(weather_data, city):  
     if weather_data:
             prognoza = weather_data["weather"][0]["description"]
             temperatura = weather_data["main"]["temp"]
@@ -227,28 +226,27 @@ def generate_weather_response(weather_data, city):
             vidljivost = weather_data.get("visibility", "N/A")
             oblaci = weather_data["clouds"]["all"]
             smjer_vjetra = weather_data["wind"].get("deg", "N/A")
-
     else:
             print(f"Nema podataka za {city}")
             results.append({"Grad": city, "Preporučeni proizvodi": "No weather data"})
 
     print(city, prognoza, temperatura, vlaznost, vjetar_brzina, osjecaj, tlak, vidljivost, oblaci, smjer_vjetra)
 
+
     #description = "sunny and 30 degrees celsius"
 
     baze={json.dumps(products, indent=2, ensure_ascii=False)}
-    
 
-    prompt = f"""Give me a product reccomendation using weather report for today {city}{prognoza}{temperatura}{vlaznost}{vjetar_brzina}{osjecaj}{tlak}{vidljivost}{oblaci}{smjer_vjetra}, degrees are in celsius, but do not mention the weather just recommend retail products that user could be interested in (food, electronics, clothes, cosmetics, beverages) based on the weather. Products must be diverse.Provide only product decription like this:
-    - A soothing and hydrating gel with aloe vera extracts 
-    - A compact and rechargeable fan
-    - lightweight t-shirt Made from breathable fabric
-   return JSON object with 5 relevant products.
+    prompt = f"""Give me a product reccomendation using weather report for today {city}{prognoza}{temperatura}{vlaznost}{vjetar_brzina}{osjecaj}{tlak}{vidljivost}{oblaci}{smjer_vjetra}, degrees are in celsius, but do not mention the weather just recommend retail products that user {user_profile} could be interested in (food, clothes, cosmetics, beverages) based on the weather. Keep in mind users preferences. Products must be diverse. Provide only product decription like this:
+  - A soothing and hydrating gel with aloe vera extracts 
+   - A compact and rechargeable fan
+   - lightweight t-shirt Made from breathable fabric
+   return JSON object with 5 relevant products. 
     
     """
 
     response = openai.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         messages=[
             {"role": "user", "content": prompt}
         ]
@@ -257,9 +255,17 @@ def generate_weather_response(weather_data, city):
 
 if __name__ == "__main__":
     results = []
+    user_profile = {
+        "vegan": True,
+        "likes": ["hiking", "technology", "cosmetics"],
+        "dislikes": ["meat", "alcohol"],
+        "preferred_categories": ["clothing", "drinks", "electronics", "snacks"]
+    }
+
+    results = []
     for city in cities:
         weather = get_weather(city)
-        preporuka = generate_weather_response(weather, city)
+        preporuka = generate_weather_response(weather, city, user_profile)
         print(preporuka)
         print("-----")
-        results.append({"Grad": city, "Preporučeni proizvodi": preporuka})
+        results.append({"Grad": city, "Preporučeni proizvodi za korisnika": preporuka})
