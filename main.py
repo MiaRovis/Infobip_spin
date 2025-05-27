@@ -142,7 +142,7 @@ products = [
   {"id": "58", "name": "Termalna deka", "description": "Zadržava toplinu zimi."},
   {"id": "59", "name": "Gumene čizme", "description": "Idealne za blatnjave dane."},
   {"id": "60", "name": "Četkica za zube", "description": "Mekana vlakna za osjetljive desni."},
-  {"id": "61", "name": "Sunđer za suđe", "description": "Dvostrana upotreba za čišćenje."},
+  {"id": "61", "name": "Spužva za suđe", "description": "Dvostrana upotreba za čišćenje."},
   {"id": "62", "name": "Pametni telefon", "description": "Srednji rang s dugom baterijom."},
   {"id": "63", "name": "Sapun", "description": "Prirodni sapun s mirisom lavande."},
   {"id": "64", "name": "Mliječni puding", "description": "S desertnim preljevom od karamele."},
@@ -259,7 +259,6 @@ if __name__ == "__main__":
         "vegan": True,
         "likes": ["hiking", "technology", "cosmetics"],
         "dislikes": ["meat", "alcohol"],
-        "preferred_categories": ["clothing", "drinks", "electronics", "snacks"]
     }
 
     results = []
