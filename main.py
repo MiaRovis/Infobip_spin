@@ -215,7 +215,7 @@ def get_weather(city):
     else:
         return None
     
-def generate_weather_response(weather_data, city):  
+def generate_weather_response(weather_data, city, user_profile):  
     if weather_data:
             prognoza = weather_data["weather"][0]["description"]
             temperatura = weather_data["main"]["temp"]
@@ -241,7 +241,7 @@ def generate_weather_response(weather_data, city):
   - A soothing and hydrating gel with aloe vera extracts 
    - A compact and rechargeable fan
    - lightweight t-shirt Made from breathable fabric
-   return JSON object with 5 relevant products. 
+   return JSON object with 3 relevant products. 
     
     """
 
@@ -254,9 +254,23 @@ def generate_weather_response(weather_data, city):
     return response.choices[0].message.content
 
 if __name__ == "__main__":
-    results = []
+    grad = "Pula"
     user_profile = {
         "vegan": True,
+        "likes": ["hiking", "technology", "cosmetics"],
+        "dislikes": ["meat", "alcohol"],
+    } 
+    weather = get_weather(grad)
+    preporuka = generate_weather_response(weather, grad, user_profile)
+    print(preporuka)
+
+
+
+
+""" if __name__ == "__main__":
+   results = []
+   user_profile = {
+       "vegan": True,
         "likes": ["hiking", "technology", "cosmetics"],
         "dislikes": ["meat", "alcohol"],
     }
@@ -268,3 +282,4 @@ if __name__ == "__main__":
         print(preporuka)
         print("-----")
         results.append({"Grad": city, "Preporučeni proizvodi za korisnika": preporuka})
+""" 
